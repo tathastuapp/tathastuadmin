@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1025696320336",
+    "firebase_url": "https://tathastu-city-app.firebaseio.com",
+    "project_id": "tathastu-city-app",
+    "storage_bucket": "tathastu-city-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025696320336:android:98192495676fc723",
+        "android_client_info": {
+          "package_name": "in.tathastuapp.tathastuadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025696320336-6g3p2trr6fpoid3nocs964ks8buf66a1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.tathastuapp.tathastuadmin",
+            "certificate_hash": "0659a65a2ac47283c215c54e28c9f42c4f1be90c"
+          }
+        },
+        {
+          "client_id": "1025696320336-0njg1ujsepphddt1oqi64c3cs7dnoo34.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6DK358y-oqJUTBvJ7ayhJ888uNf7Wijg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025696320336-0njg1ujsepphddt1oqi64c3cs7dnoo34.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

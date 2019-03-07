@@ -1,0 +1,32 @@
+import 'package:flutter/material.dart';
+import 'package:tathastu_admin/pages/home/components/sidemenu/sidemenu.dart';
+
+class HomePage extends StatefulWidget {
+  final Widget child;
+
+  HomePage({Key key, this.child}) : super(key: key);
+
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+          child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Tathastu Admin',
+            style: TextStyle(color: Colors.black),
+          ),
+          iconTheme: IconThemeData(color: Colors.black),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: Container(),
+        backgroundColor: Colors.white,
+        drawer: Drawer(child: SideMenuComponent()),
+      ),
+    );
+  }
+}
