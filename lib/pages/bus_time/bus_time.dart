@@ -1,6 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+
 import 'package:tathastu_admin/pages/bus_time/add_bus_time/add_bus_time.dart';
+import 'package:tathastu_admin/pages/bus_time/service/bus_time_service.dart';
+import 'package:tathastu_admin/pages/bus_time/update_bus_time/update_bus_time.dart';
 import 'package:tathastu_admin/pages/home/components/sidemenu/sidemenu.dart';
 
 class BusTimePage extends StatefulWidget {
@@ -12,28 +17,19 @@ class BusTimePage extends StatefulWidget {
 }
 
 class _BusTimePageState extends State<BusTimePage> {
-  List<Map<String, dynamic>> listItems = [
-    {
-      'time': '02:45 PM',
-      'busRoute': 'HYDERABAD - SURENDRANAGAR', 
-      'stations': 'Unjha - Mehsana - Kalol'
-    },
-    {
-      'time': '02:45 PM',
-      'busRoute': 'PATAN - AHMEDABAD',
-      'stations': 'Unjha - Mehsana - Kalol'
-    },
-    {
-      'time': '02:45 PM',
-      'busRoute': 'PATAN - AHMEDABAD',
-      'stations': 'Unjha - Mehsana - Kalol'
-    },
-    {
-      'time': '02:45 PM',
-      'busRoute': 'PATAN - AHMEDABAD',
-      'stations': 'Unjha - Mehsana - Kalol'
-    },
-  ];
+  BusTimeService busTimeService = new BusTimeService();
+  static Stream<QuerySnapshot> qn;
+  @override
+  void initState() {
+
+    qn = getDocuments();
+
+    super.initState();
+  }
+
+  getDocuments() async {
+    return await busTimeService.getBusTimes();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,50 +42,143 @@ class _BusTimePageState extends State<BusTimePage> {
           ),
           iconTheme: IconThemeData(color: Colors.black),
           backgroundColor: Colors.white,
-          elevation: 0,
+          elevation: 2,
         ),
-        body: listViewBuilder(listItems),
+        body: listViewBuilder(),
         backgroundColor: Colors.white,
         drawer: Drawer(child: SideMenuComponent()),
         floatingActionButton: FloatingActionButton(
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(
-              builder: (context) => AddBusTimePage()
-            ));
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => AddBusTimePage()));
           },
-          child: Icon(Icons.add, color: Colors.black,),
+          child: Icon(
+            Icons.add,
+            color: Colors.black,
+          ),
           backgroundColor: Colors.white,
         ),
       ),
     );
   }
 
-  Widget listViewBuilder(List<Map<String, dynamic>> listItems) {
-    return ListView.separated(
-      itemCount: listItems.length,
-      itemBuilder: (BuildContext context, index) {
-        return listTile(listItems[index]['time'], listItems[index]['busRoute'],
-            listItems[index]['stations']);
+  Widget listViewBuilder() {
+    return StreamBuilder(
+      stream: qn,
+      builder: (BuildContext context, snapshot) {
+        if (!snapshot.hasData) {
+          return Text('Loading...');
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data.documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              return listTile(
+                  snapshot.data.documents[index]['time'],
+                  snapshot.data.documents[index]['source'],
+                  snapshot.data.documents[index]['destination'],
+                  snapshot.data.documents[index]['stations'],
+                  snapshot.data.documents[index].reference.documentID
+                      .toString(),
+                  index);
+              // return tiles(snapshot.data.documents[index].reference);
+            },
+          );
+        }
       },
-      separatorBuilder: (context, index) {
-        return Divider();
-      },
+    );
+
+    // return ListView.separated(
+    //   itemCount: listItems.length,
+    //   itemBuilder: (BuildContext context, index) {
+    //     return listTile(listItems[index]['time'], listItems[index]['busRoute'],
+    //         listItems[index]['stations'], index);
+    //   },
+    //   separatorBuilder: (context, index) {
+    //     return Divider();
+    //   },
+    // );
+  }
+
+  Widget tiles(var data) {
+    return Container(
+      child: Center(
+        child: Text(data.documentID.toString()),
+      ),
     );
   }
 
-  Widget listTile(String time, String busRoute, String stations) {
+  Widget listTile(DateTime date, String source, String destination,
+      String stations, String documentID, int index) {
+    TimeOfDay _time = TimeOfDay.fromDateTime(date);
+
+    String _hour =
+        (_time.hourOfPeriod == 0 ? '12' : _time.hourOfPeriod.toString())
+                    .length <
+                2
+            ? ('0' + _time.hourOfPeriod.toString())
+            : _time.hourOfPeriod.toString();
+    String _minute = _time.minute.toString().length < 2
+        ? ('0' + _time.minute.toString())
+        : _time.minute.toString();
+    String _period = _time.period.index == 0 ? 'AM' : 'PM';
+
+    String time = '${_hour} : ${_minute} ${_period}';
+
+    String busRoute = '${source.toUpperCase()} - ${destination.toUpperCase()}';
+
     return Container(
-      padding: EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              buildClockAndTime(time),
-              buildBusRoute(busRoute, stations),
-            ],
+      decoration: BoxDecoration(
+          border:
+              Border(bottom: BorderSide(color: Colors.black12, width: 1.0))),
+      child: Slidable(
+        delegate: new SlidableDrawerDelegate(),
+        actionExtentRatio: 0.25,
+        child: new Container(
+          color: Colors.white,
+          child: Container(
+            padding: EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    buildClockAndTime(time),
+                    buildBusRoute(busRoute, stations),
+                  ],
+                ),
+              ],
+            ),
           ),
-          buildActions(),
+        ),
+        secondaryActions: <Widget>[
+          new IconSlideAction(
+            caption: 'Edit',
+            color: Colors.orange,
+            icon: Icons.edit,
+            foregroundColor: Colors.white,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => UpdateBusTimePage(
+                            document: {
+                              'id': documentID,
+                              'date': date,
+                              'source': source,
+                              'destination': destination,
+                              'stations': stations
+                            },
+                          )));
+            },
+          ),
+          new IconSlideAction(
+            caption: 'Delete',
+            color: Colors.red,
+            icon: Icons.delete,
+            onTap: () {
+              print('Delete');
+            },
+          ),
         ],
       ),
     );
@@ -125,7 +214,7 @@ class _BusTimePageState extends State<BusTimePage> {
               child: Text(
             busRoute,
             style: TextStyle(
-                fontSize: 14.0,
+                fontSize: 16.0,
                 color: Colors.grey[850],
                 fontWeight: FontWeight.w600),
           )),
@@ -138,25 +227,4 @@ class _BusTimePageState extends State<BusTimePage> {
       ),
     );
   }
-
-  Widget buildActions(){
-    List<String> choices = [
-      'Modify',
-      'Delete'
-    ];
-    return Container(
-      child: PopupMenuButton(
-            onSelected: null,
-            itemBuilder: (BuildContext context){
-              return choices.map((String choice){
-                return PopupMenuItem(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
-            },
-          ),
-    );
-  }
-
 }

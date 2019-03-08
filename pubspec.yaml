@@ -24,7 +24,12 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
 
+  # This package allows actions on swipe on listitems
+  flutter_slidable: ^0.4.9
+  # SVG rendering package
   flutter_svg: ^0.7.0+1
+  # Cloud Firestore package for backend
+  cloud_firestore: ^0.9.5+2
 
 dev_dependencies:
   flutter_test:

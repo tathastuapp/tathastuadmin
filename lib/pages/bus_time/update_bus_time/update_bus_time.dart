@@ -2,26 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tathastu_admin/pages/bus_time/service/bus_time_service.dart';
 
-class AddBusTimePage extends StatefulWidget {
+class UpdateBusTimePage extends StatefulWidget {
   final Widget child;
 
-  AddBusTimePage({Key key, this.child}) : super(key: key);
+  final Map<String, dynamic> document;
 
-  _AddBusTimePageState createState() => _AddBusTimePageState();
+  UpdateBusTimePage({Key key, this.child, this.document}) : super(key: key);
+
+  _UpdateBusTimePageState createState() => _UpdateBusTimePageState();
 }
 
-class _AddBusTimePageState extends State<AddBusTimePage> {
+class _UpdateBusTimePageState extends State<UpdateBusTimePage> {
   DateTime _date = DateTime.now();
   TimeOfDay _time = TimeOfDay.now();
-  String _source = '', _destination = '', _stations = '', _city = 'patan';
-  GlobalKey<FormState> addBusTimeFormKey =
-      new GlobalKey<FormState>();
+  String _id = '',
+      _source = '',
+      _destination = '',
+      _stations = '',
+      _city = 'patan';
+  GlobalKey<FormState> addBusTimeFormKey = new GlobalKey<FormState>();
 
-  TextEditingController _sourceController =TextEditingController();
-  TextEditingController _destinationController =TextEditingController();
-  TextEditingController _stationsController =TextEditingController();
+  TextEditingController _sourceController = TextEditingController();
+  TextEditingController _destinationController = TextEditingController();
+  TextEditingController _stationsController = TextEditingController();
 
   BusTimeService busTimeService = new BusTimeService();
+
+  @override
+  void initState() {
+    this._id = widget.document['id'];
+    this._time = TimeOfDay.fromDateTime(widget.document['date']);
+    this._sourceController.text = widget.document['source'];
+    this._destinationController.text = widget.document['destination'];
+    this._stationsController.text = widget.document['stations'];
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,8 +87,14 @@ class _AddBusTimePageState extends State<AddBusTimePage> {
 
   Widget buildSelectTimeField() {
     String _hour =
-        (_time.hourOfPeriod == 0 ? '12' : _time.hourOfPeriod.toString()).length < 2 ? ('0'+_time.hourOfPeriod.toString()) : _time.hourOfPeriod.toString();
-    String _minute = _time.minute.toString().length < 2 ? ('0'+_time.minute.toString()):_time.minute.toString();
+        (_time.hourOfPeriod == 0 ? '12' : _time.hourOfPeriod.toString())
+                    .length <
+                2
+            ? ('0' + _time.hourOfPeriod.toString())
+            : _time.hourOfPeriod.toString();
+    String _minute = _time.minute.toString().length < 2
+        ? ('0' + _time.minute.toString())
+        : _time.minute.toString();
     String _period = _time.period.index == 0 ? 'AM' : 'PM';
 
     _date =
@@ -129,8 +151,8 @@ class _AddBusTimePageState extends State<AddBusTimePage> {
           color: Colors.black87,
         ),
         controller: _sourceController,
-        validator: (value){
-          if(value.length <2){
+        validator: (value) {
+          if (value.length < 2) {
             return 'Minimum 2 characters required';
           }
         },
@@ -155,8 +177,8 @@ class _AddBusTimePageState extends State<AddBusTimePage> {
           border: OutlineInputBorder(),
         ),
         style: TextStyle(fontSize: 20.0, color: Colors.black87),
-        validator: (value){
-          if(value.length <2){
+        validator: (value) {
+          if (value.length < 2) {
             return 'Minimum 2 characters required';
           }
         },
@@ -182,8 +204,8 @@ class _AddBusTimePageState extends State<AddBusTimePage> {
           border: OutlineInputBorder(),
         ),
         style: TextStyle(fontSize: 20.0, color: Colors.black87),
-        validator: (value){
-          if(value.length <2){
+        validator: (value) {
+          if (value.length < 2) {
             return 'Minimum 2 characters required';
           }
         },
@@ -209,39 +231,40 @@ class _AddBusTimePageState extends State<AddBusTimePage> {
           'SUBMIT',
           style: TextStyle(color: Colors.white),
         ),
-        onPressed: addBusTime,
+        onPressed: updateBusTime,
       ),
     );
   }
 
-  addBusTime() {
+  updateBusTime() {
     if (addBusTimeFormKey.currentState.validate() && _time != null) {
       addBusTimeFormKey.currentState.save();
+
+      print('Document Reference in Update Page : $_id');
+
       busTimeService
-          .addBusTime(_date, _source.toUpperCase(), _destination.toUpperCase(), _stations, _city)
+          .updateBusTime(_id, _date, _source.toUpperCase(),
+              _destination.toUpperCase(), _stations, _city)
           .then((value) {
-        print('Bus Time document added : $value');
+        print('Bus Time document Updated : $value');
         _time = TimeOfDay.now();
         _sourceController.text = '';
         _destinationController.text = '';
         _stationsController.text = '';
         showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-          title: Text('Success'),
-          content: Text('Bus Time is successfully added.'),
-        )
-    );
-        
+            context: context,
+            builder: (_) => new AlertDialog(
+                  title: Text('Success'),
+                  content: Text('Bus Time is successfully updated.'),
+                ));
       }).catchError((error) {
-        print('An error occured while adding Bus Time');
+        print(error);
         showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-          title: Text('Error'),
-          content: Text('An error occured while adding Bus Time.'),
-        )
-    );
+            context: context,
+            builder: (_) => new AlertDialog(
+                  title: Text('Error'),
+                  content: Text('An error occured while adding Bus Time.'),
+                ));
       });
     }
   }
