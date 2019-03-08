@@ -263,7 +263,7 @@ class _UpdateBusTimePageState extends State<UpdateBusTimePage> {
             context: context,
             builder: (_) => new AlertDialog(
                   title: Text('Error'),
-                  content: Text('An error occured while adding Bus Time.'),
+                  content: Text('An error occured while updating Bus Time.'),
                 ));
       });
     }

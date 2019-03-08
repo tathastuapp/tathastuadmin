@@ -21,14 +21,13 @@ class _BusTimePageState extends State<BusTimePage> {
   static Stream<QuerySnapshot> qn;
   @override
   void initState() {
-
     qn = getDocuments();
 
     super.initState();
   }
 
-  getDocuments() async {
-    return await busTimeService.getBusTimes();
+  getDocuments() {
+    return busTimeService.getBusTimes();
   }
 
   @override
@@ -176,7 +175,23 @@ class _BusTimePageState extends State<BusTimePage> {
             color: Colors.red,
             icon: Icons.delete,
             onTap: () {
-              print('Delete');
+              busTimeService.deleteBusTime(documentID).then((value) {
+                showDialog(
+                    context: context,
+                    builder: (_) => new AlertDialog(
+                          title: Text('Success'),
+                          content: Text('Bus Time is successfully deleted.'),
+                        ));
+              }).catchError((error) {
+                print(error);
+                showDialog(
+                    context: context,
+                    builder: (_) => new AlertDialog(
+                          title: Text('Error'),
+                          content:
+                              Text('An error occured while deleting Bus Time.'),
+                        ));
+              });
             },
           ),
         ],
