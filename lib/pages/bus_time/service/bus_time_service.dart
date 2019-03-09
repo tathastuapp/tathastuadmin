@@ -5,29 +5,34 @@ class BusTimeService {
   DocumentReference documentReference;
 
   Stream<QuerySnapshot> getBusTimes() {
-    return Firestore.instance.collection('bus-times').where('city', isEqualTo: 'patan').snapshots();
+    return Firestore.instance.collection('bus-times')
+    .where('city', isEqualTo: 'patan')
+    .orderBy('time')
+    .snapshots();
   }
 
-  Future<bool> addBusTime(DateTime time, String source, String destination, String stations, String city) async{
+  Future<bool> addBusTime(DateTime time, String source, String destination, String stations, bool isExpress, String city) async{
     documentReference = await Firestore.instance.collection('bus-times').add({
       'time' :time,
       'source':source,
       'destination':destination,
       'stations':stations,
+      'isExpress':isExpress,
       'city': city
     });
     return true;
   }
 
-  Future<bool> updateBusTime(String id, DateTime time, String source, String destination, String stations, String city) async{
+  Future<bool> updateBusTime(String id, DateTime time, String source, String destination, String stations, bool isExpress, String city) async{
     
-    print('Document Referecnce To Update : ${id}');
+    print('Document Referecnce To Update : $id');
 
     await Firestore.instance.collection('bus-times').document(id).updateData({
       'time' :time,
       'source':source,
       'destination':destination,
       'stations':stations,
+      'isExpress':isExpress,
       'city': city
     });
     return true;

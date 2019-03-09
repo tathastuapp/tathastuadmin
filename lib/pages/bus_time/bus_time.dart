@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-import 'package:tathastu_admin/pages/bus_time/add_bus_time/add_bus_time.dart';
+import 'package:tathastu_admin/pages/bus_time/add_bus_time.dart';
 import 'package:tathastu_admin/pages/bus_time/service/bus_time_service.dart';
-import 'package:tathastu_admin/pages/bus_time/update_bus_time/update_bus_time.dart';
+import 'package:tathastu_admin/pages/bus_time/update_bus_time.dart';
 import 'package:tathastu_admin/pages/home/components/sidemenu/sidemenu.dart';
 
 class BusTimePage extends StatefulWidget {
@@ -76,6 +76,7 @@ class _BusTimePageState extends State<BusTimePage> {
                   snapshot.data.documents[index]['source'],
                   snapshot.data.documents[index]['destination'],
                   snapshot.data.documents[index]['stations'],
+                  snapshot.data.documents[index]['isExpress'],
                   snapshot.data.documents[index].reference.documentID
                       .toString(),
                   index);
@@ -107,13 +108,12 @@ class _BusTimePageState extends State<BusTimePage> {
   }
 
   Widget listTile(DateTime date, String source, String destination,
-      String stations, String documentID, int index) {
+      String stations, bool isExpress, String documentID, int index) {
     TimeOfDay _time = TimeOfDay.fromDateTime(date);
 
-    String _hour =
-        (_time.hourOfPeriod == 0 ? '12' : _time.hourOfPeriod.toString())
-                    .length <
-                2
+    String _hour = (_time.hourOfPeriod == 0)
+        ? '12'
+        : (_time.hourOfPeriod.toString().length < 2)
             ? ('0' + _time.hourOfPeriod.toString())
             : _time.hourOfPeriod.toString();
     String _minute = _time.minute.toString().length < 2
@@ -121,7 +121,7 @@ class _BusTimePageState extends State<BusTimePage> {
         : _time.minute.toString();
     String _period = _time.period.index == 0 ? 'AM' : 'PM';
 
-    String time = '${_hour} : ${_minute} ${_period}';
+    String time = '$_hour:$_minute $_period';
 
     String busRoute = '${source.toUpperCase()} - ${destination.toUpperCase()}';
 
@@ -142,7 +142,7 @@ class _BusTimePageState extends State<BusTimePage> {
                 Row(
                   children: <Widget>[
                     buildClockAndTime(time),
-                    buildBusRoute(busRoute, stations),
+                    buildBusRoute(busRoute, stations, isExpress),
                   ],
                 ),
               ],
@@ -175,23 +175,57 @@ class _BusTimePageState extends State<BusTimePage> {
             color: Colors.red,
             icon: Icons.delete,
             onTap: () {
-              busTimeService.deleteBusTime(documentID).then((value) {
-                showDialog(
-                    context: context,
-                    builder: (_) => new AlertDialog(
-                          title: Text('Success'),
-                          content: Text('Bus Time is successfully deleted.'),
-                        ));
-              }).catchError((error) {
-                print(error);
-                showDialog(
-                    context: context,
-                    builder: (_) => new AlertDialog(
-                          title: Text('Error'),
-                          content:
-                              Text('An error occured while deleting Bus Time.'),
-                        ));
-              });
+              showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => new AlertDialog(
+                        title: Text('Warning',
+                            style: TextStyle(color: Colors.orange)),
+                        content: Text('Are you confirm to delete Bus Time ?'),
+                        actions: <Widget>[
+                          FlatButton(
+                            color: Colors.white,
+                            child: Text('NO',
+                                style: TextStyle(color: Colors.blue)),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          FlatButton(
+                            color: Colors.blue,
+                            child: Text('YES',
+                                style: TextStyle(color: Colors.white)),
+                            onPressed: () {
+                              
+                              busTimeService
+                                  .deleteBusTime(documentID)
+                                  .then((value) {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => new AlertDialog(
+                                          title: Text('Success'),
+                                          content: Text(
+                                              'Bus Time is successfully deleted.'),
+                                          
+                                        ));
+
+                              }).catchError((error) {
+                                print(error);
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => new AlertDialog(
+                                          title: Text('Error'),
+                                          content: Text(
+                                              'An error occured while deleting Bus Time.'),
+                                          
+                                        ),
+                                        );
+                              });
+                              Navigator.pop(context);
+                            },
+                          )
+                        ],
+                      ));
             },
           ),
         ],
@@ -218,7 +252,7 @@ class _BusTimePageState extends State<BusTimePage> {
     );
   }
 
-  Widget buildBusRoute(String busRoute, String stations) {
+  Widget buildBusRoute(String busRoute, String stations, bool isExpress) {
     return Container(
       padding: EdgeInsets.only(left: 16.0),
       child: Column(
@@ -230,7 +264,7 @@ class _BusTimePageState extends State<BusTimePage> {
             busRoute,
             style: TextStyle(
                 fontSize: 16.0,
-                color: Colors.grey[850],
+                color: isExpress ? Colors.red[700] : Colors.grey[850],
                 fontWeight: FontWeight.w600),
           )),
           Container(
